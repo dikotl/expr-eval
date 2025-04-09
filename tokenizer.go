@@ -9,6 +9,17 @@ import (
 	"unicode"
 )
 
+var operators = map[rune]TokenKind{
+	'+': Plus,
+	'-': Minus,
+	'*': Asterisk,
+	'/': Slash,
+	'%': Percent,
+	'^': Caret,
+	'(': LeParen,
+	')': RiParen,
+}
+
 const eof = '\000'
 
 type Tokenizer struct {
@@ -71,25 +82,6 @@ func (t *Tokenizer) Next() (peeked rune) {
 	return char
 }
 
-var operators = map[rune]TokenKind{
-	'+': Plus,
-	'-': Minus,
-	'*': Asterisk,
-	'/': Slash,
-	'%': Percent,
-	'(': LeParen,
-	')': RiParen,
-}
-
-func isOperator(c rune) bool {
-	_, ok := operators[c]
-	return ok
-}
-
-func isWhitespace(c rune) bool {
-	return c == ' ' || c == '\t'
-}
-
 func (s *Tokenizer) Advance() (previous rune) {
 	previous = s.peeked
 	s.Next()
@@ -137,4 +129,13 @@ func (t *Tokenizer) Chars() iter.Seq[rune] {
 			t.Advance()
 		}
 	}
+}
+
+func isOperator(c rune) bool {
+	_, ok := operators[c]
+	return ok
+}
+
+func isWhitespace(c rune) bool {
+	return c == ' ' || c == '\t'
 }

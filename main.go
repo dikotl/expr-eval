@@ -47,8 +47,8 @@ func main() {
 
 	for {
 		trimmedInput := NewStackFrom(items[itemIndex:])
-		stack := Eval(trimmedInput)
-		Display(items[itemIndex].Span, stack, len(inputStr), first)
+		stack, err := Eval(trimmedInput)
+		Display(items[itemIndex].Span, stack, err, first)
 		first = false
 
 		n, err := os.Stdin.Read(buf)

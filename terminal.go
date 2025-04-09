@@ -28,7 +28,11 @@ func setRawMode(raw bool) {
 }
 
 func runInterruptNotifyMonitor() context.CancelFunc {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
 
 	go func() {
 		<-ctx.Done()

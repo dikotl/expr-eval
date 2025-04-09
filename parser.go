@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
 
 var precedences = map[TokenKind]int{
-	EOF:      -1,
 	Plus:     2,
 	Minus:    2,
 	Asterisk: 3,
 	Slash:    3,
 	Percent:  3,
+	Caret:    4,
 }
 
 type Parser struct {
@@ -29,18 +30,24 @@ func NewParser(expr string) Parser {
 }
 
 func (p *Parser) Expr() AstNode {
-	return p.binary(0)
+	return p.binary(1)
 }
 
 func (p *Parser) binary(precedence int) AstNode {
 	x := p.prefixed()
 
-	for precedences[p.Kind] >= precedence {
+	for {
+		prec, present := precedences[p.Kind]
+
+		if !present || prec < precedence {
+			break
+		}
+
 		operator := p.next()
 
 		x = &BinaryOperation{
 			X:         x,
-			Y:         p.binary(precedences[operator.Kind] + 1),
+			Y:         p.binary(prec + 1),
 			Kind:      operator.Kind,
 			TokenSpan: operator.Span,
 		}
@@ -90,12 +97,7 @@ func (p *Parser) operand() AstNode {
 
 		defer func() {
 			if p.Kind != RiParen {
-				fmt.Printf(
-					"%s^ expected closing parenthesis\n",
-					strings.Repeat(" ", p.Span.A),
-				)
-				// os.Exit(2)
-				panic("unreachable")
+				p.error("expected closing parenthesis")
 			}
 
 			p.next()
@@ -105,11 +107,7 @@ func (p *Parser) operand() AstNode {
 		return p.Expr()
 
 	default:
-		fmt.Printf(
-			"%s^ expected operand\n",
-			strings.Repeat(" ", p.Span.A),
-		)
-		// os.Exit(2)
+		p.error("expected operand")
 		panic("unreachable")
 	}
 }
@@ -122,4 +120,9 @@ func (p *Parser) next() (previous Token) {
 	}
 
 	return
+}
+
+func (p *Parser) error(message string) {
+	fmt.Printf("%s^ %s\n", strings.Repeat(" ", p.Span.A), message)
+	os.Exit(2)
 }

@@ -12,7 +12,7 @@ type AstWalker interface {
 func WalkAst(ast AstNode, walker AstWalker) {
 	switch node := ast.(type) {
 	case nil:
-		panic("unreachable")
+		panic("WalkAst: got nil node")
 
 	case *NumberNode:
 		walker.WalkNumber(node)
@@ -27,6 +27,6 @@ func WalkAst(ast AstNode, walker AstWalker) {
 		walker.WalkUnaryOperation(node)
 
 	default:
-		panic(fmt.Sprintf("unexpected main.AstNode: %#v", node))
+		panic(fmt.Sprintf("unexpected ast node: %#v", node))
 	}
 }

@@ -1,6 +1,6 @@
 package main
 
-//go:generate stringer -type=Token -output=token_string.go -linecomment
+//go:generate stringer -type=TokenKind -output=token_string.go -linecomment
 type TokenKind byte
 
 const (
@@ -13,6 +13,7 @@ const (
 	Asterisk // *
 	Slash    // /
 	Percent  // %
+	Caret    // ^
 	LeParen  // (
 	RiParen  // )
 )
@@ -30,7 +31,7 @@ func (t Token) String() string {
 	case Number, Variable:
 		return t.Data
 
-	case EOF, Plus, Minus, Asterisk, Slash, Percent, LeParen, RiParen:
+	case EOF, Plus, Minus, Asterisk, Slash, Percent, Caret, LeParen, RiParen:
 		return t.Kind.String()
 
 	default:
