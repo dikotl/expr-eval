@@ -2,68 +2,84 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
-	"slices"
 	"strings"
 )
 
-func main() {
-	fmt.Println("Input any math expression, then press ← or → to move " +
-		"through the expression. Ctrl+C to exit.")
+const Prompt = "Input simple math expression, then press ← or → to move " +
+	"through the expression. Ctrl+C to exit."
 
+// CLI flag.
+var (
+	origFlag = flag.Bool(
+		"orig",
+		false,
+		"Uses original expression in step-through process",
+	)
+
+	normalizeFlag = flag.Bool(
+		"normalize",
+		false,
+		"Normalizes the expression, print it and quit",
+	)
+)
+
+func main() {
+	flag.Parse()
+	fmt.Println(Prompt)
+
+	// Read the expression.
 	stdin := bufio.NewReader(os.Stdin)
 	expr := readExpr(stdin)
 
+	// Parse it into an AST.
 	p := NewParser(expr)
 	ast := p.Expr()
 
-	// fmt.Print("Normalized expression: ")
-	// WalkAst(ast, AstPrinter{})
-	// fmt.Println()
-
-	polish := ReversePolishBuilder{Stack: NewStack[Token]()}
-	WalkAst(ast, &polish)
-
-	inputStr := polish.Stack.String()
-	fmt.Printf("Parsed expression in reverse polish notation:\n%s\n", inputStr)
-	t := Tokenizer{}
-	t.input.Reset(inputStr)
-	newInput := make([]Token, 0, len(polish.items))
-	for range len(polish.items) {
-		newInput = append(newInput, t.NextToken())
+	if *normalizeFlag {
+		WalkAst(ast, AstPrinter{})
+		fmt.Println()
+		return
 	}
-	slices.Reverse(newInput)
 
+	actions := AstToReversePolishNotation(ast, !*origFlag)
+	actionIndex := len(actions.items) - 1
 	first := true
-	items := newInput
-	itemIndex := len(items) - 1
 
+	if !*origFlag {
+		fmt.Println(actions.String())
+	}
+
+	// Set terminal into raw mode so we can handle arrow keys gracefully.
 	setRawMode(true)
 	defer setRawMode(false)
-	// defer runInterruptNotifyMonitor()()
+	// defer runInterruptNotifyMonitor()() // Ctrl+C hook.
 
-	buf := make([]byte, 3)
+	var buf [3]byte
 
 	for {
-		trimmedInput := NewStackFrom(items[itemIndex:])
+		// Cut the input so we evaluate items before the pointer.
+		trimmedInput := NewStackFrom(actions.items[actionIndex:])
 		stack, err := Eval(trimmedInput)
-		Display(items[itemIndex].Span, stack, err, first)
+		Display(actions.items[actionIndex].Span, stack, err, first)
 		first = false
 
-		n, err := os.Stdin.Read(buf)
-
+		// Read the input, we need exactly 3 bytes.
+		n, err := os.Stdin.Read(buf[:])
 		if err != nil {
 			panic(err)
 		}
 
+		// Test the input for left\right arrow or Ctrl+C
 		switch {
 		case n == 3 && buf[0] == 27 && buf[1] == 91: // Esc
 			switch buf[2] {
-			case 'C':
-				itemIndex = max(itemIndex-1, 0)
-			case 'D':
-				itemIndex = min(itemIndex+1, len(items)-1)
+			case 'C': // left arrow
+				actionIndex = max(actionIndex-1, 0)
+			case 'D': // right arrow
+				actionIndex = min(actionIndex+1, actions.Len()-1)
 			default:
 				// Ignore other escape sequences
 			}
@@ -77,11 +93,9 @@ func main() {
 func readExpr(r *bufio.Reader) string {
 	for {
 		s, err := r.ReadString('\n')
-
 		if err == nil {
 			return strings.TrimSpace(s)
 		}
-
 		fmt.Printf("error: %s\n", err)
 	}
 }

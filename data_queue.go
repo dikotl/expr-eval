@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -17,7 +18,7 @@ func NewQueueFrom[T any](items []T) Queue[T] {
 	return Queue[T]{items: items}
 }
 func (queue *Queue[T]) Push(item T) {
-	queue.items = append(queue.items, item)
+	queue.items = slices.Insert(queue.items, 0, item)
 }
 
 func (queue *Queue[T]) Pop() (item T, present bool) {
@@ -37,14 +38,18 @@ func (queue *Queue[T]) MustPop() T {
 	return item
 }
 
-func (queue Queue[T]) Peek() *T {
+func (queue *Queue[T]) Peek() *T {
 	if len(queue.items) == 0 {
 		return nil
 	}
 	return &queue.items[0]
 }
 
-func (queue Queue[T]) String() string {
+func (queue *Queue[T]) Len() int {
+	return len(queue.items)
+}
+
+func (queue *Queue[T]) String() string {
 	buf := strings.Builder{}
 	for i, entry := range queue.items {
 		if i > 0 {

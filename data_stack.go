@@ -38,14 +38,18 @@ func (stack *Stack[T]) MustPop() T {
 	return item
 }
 
-func (stack Stack[T]) Peek() *T {
+func (stack *Stack[T]) Peek() *T {
 	if len(stack.items) == 0 {
 		return nil
 	}
 	return &stack.items[len(stack.items)-1]
 }
 
-func (stack Stack[T]) String() string {
+func (stack *Stack[T]) Len() int {
+	return len(stack.items)
+}
+
+func (stack *Stack[T]) String() string {
 	buf := strings.Builder{}
 	for i := len(stack.items) - 1; i >= 0; i-- {
 		if i != len(stack.items)-1 {
