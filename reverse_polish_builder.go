@@ -28,7 +28,7 @@ func AstToReversePolishNotation(ast AstNode, reTokenize bool) Stack[Token] {
 		reTokenizedActions := make([]Token, builder.stack.Len())
 
 		// Push items in reversed order.
-		for i := builder.stack.Len()-1; i >= 0; i-- {
+		for i := builder.stack.Len() - 1; i >= 0; i-- {
 			reTokenizedActions[i] = t.NextToken()
 		}
 
@@ -67,7 +67,7 @@ func (builder *ReversePolishBuilder) WalkBinaryOperation(node *BinaryOperation) 
 
 func (builder *ReversePolishBuilder) WalkUnaryOperation(node *UnaryOperation) {
 	builder.stack.Push(Token{
-		Kind: node.Kind,
+		Kind: Tilde,
 		Span: node.TokenSpan,
 	})
 

@@ -16,6 +16,7 @@ var operators = map[rune]TokenKind{
 	'/': Slash,
 	'%': Percent,
 	'^': Caret,
+	'~': Tilde,
 	'(': LeParen,
 	')': RiParen,
 }

@@ -20,11 +20,12 @@ func _() {
 	_ = x[Caret-9]
 	_ = x[LeParen-10]
 	_ = x[RiParen-11]
+	_ = x[Tilde-12]
 }
 
-const _TokenKind_name = "InvalidTokenEOFNumberVariable+-*/%^()"
+const _TokenKind_name = "InvalidTokenEOFNumberVariable+-*/%^()~"
 
-var _TokenKind_index = [...]uint8{0, 12, 15, 21, 29, 30, 31, 32, 33, 34, 35, 36, 37}
+var _TokenKind_index = [...]uint8{0, 12, 15, 21, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38}
 
 func (i TokenKind) String() string {
 	if i >= TokenKind(len(_TokenKind_index)-1) {

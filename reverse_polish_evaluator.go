@@ -13,8 +13,18 @@ var binaryOperations = map[TokenKind]func(x, y int) int{
 	Plus:     func(x, y int) int { return x + y },
 	Minus:    func(x, y int) int { return x - y },
 	Asterisk: func(x, y int) int { return x * y },
-	Slash:    func(x, y int) int { return x / y },
-	Percent:  func(x, y int) int { return x % y },
+	Slash: func(x, y int) int {
+		if y == 0 {
+			return 0
+		}
+		return x / y
+	},
+	Percent: func(x, y int) int {
+		if y == 0 {
+			return 0
+		}
+		return x % y
+	},
 	Caret: func(base, exp int) int {
 		result := 1
 		for exp != 0 {
@@ -41,6 +51,15 @@ func Eval(input Stack[Token]) (result Stack[int], _ error) {
 
 		case Variable:
 			panic("Eval: variables are not implemented")
+
+		case Tilde:
+			x, ok := result.Pop()
+
+			if !ok {
+				return result, ErrNotEnoughItems
+			}
+
+			result.Push(-x)
 
 		case Plus, Minus, Asterisk, Slash, Percent, Caret:
 			x, y, err := pop2Items(&result)
